@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MediGraph Hospital</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.9/standalone/umd/vis-network.min.js"></script>
+<style>
+:root{--bg:#f4f7fa;--card:#fff;--line:#e2e8f0;--text:#14202e;--muted:#64748b;--brand:#0e9486;--brand2:#0b6f65;--soft:#e0f5f2;--danger:#d64545;--dsoft:#fde8e8;--shadow:0 1px 3px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.05)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,Arial,sans-serif}
+header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}
+.nav{max-width:1200px;margin:auto;display:flex;align-items:center;gap:16px;padding:10px 20px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;color:var(--brand2);cursor:pointer}
+.logo i{width:34px;height:34px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-style:normal;font-size:20px}
+nav{display:flex;gap:2px;flex-wrap:wrap;flex:1}
+nav button{border:0;background:none;padding:8px 12px;border-radius:8px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}
+nav button:hover{background:var(--bg);color:var(--text)}
+nav button.on{background:var(--soft);color:var(--brand2)}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--danger)}
+.pill.ok i{background:#22c55e}
+main{max-width:1200px;margin:auto;padding:22px 20px 60px}
+.page{display:none}.page.on{display:block;animation:f .2s}
+@keyframes f{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.head h2{margin:0;font-size:24px}.head p{margin:2px 0 0;color:var(--muted)}
+.hero{background:linear-gradient(120deg,#0b6f65,#0e9486 60%,#2ec4b6);color:#fff;border-radius:18px;padding:36px;margin-bottom:20px}
+.hero h1{margin:0 0 8px;font-size:34px}.hero p{margin:0 0 18px;max-width:600px;opacity:.92;font-size:16px}
+.hero .btn{background:#fff;color:var(--brand2);margin-right:8px}
+.hero .btn.ghost{background:rgba(255,255,255,.18);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.card h3{margin:0 0 12px;font-size:16px}.card h3 small{color:var(--muted);font-weight:400;margin-left:6px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:16px}
+.stat{margin:0;text-align:center}.stat .num{font-size:30px;font-weight:700;color:var(--brand2)}.stat .lbl{color:var(--muted);font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-side{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.grid2,.grid-side{grid-template-columns:1fr}}
+.deps{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.dep{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg)}.dep b{display:block}.dep span{color:var(--muted);font-size:13px}
+.btn{background:var(--brand);color:#fff;border:0;border-radius:9px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:var(--bg);color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:var(--dsoft);color:var(--danger)}
+.btn.sm{padding:4px 10px;font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+td.act{text-align:right;white-space:nowrap}
+.empty{color:var(--muted);padding:14px 4px}
+.tag{display:inline-block;padding:2px 10px;margin:2px 6px 2px 0;border-radius:999px;background:var(--soft);color:var(--brand2);font-size:12.5px;font-weight:600}
+.tag.f{background:#fde7f3;color:#b0306f}.tag.m{background:#e3efff;color:#2f64b8}
+label,.lbl2{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:12px}
+input,select{background:#fff;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font:inherit;min-width:0}
+input:focus,select:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}.row>label{flex:1;min-width:150px}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;max-height:200px;overflow:auto}
+.checks label{flex-direction:row;align-items:center;gap:8px;margin:0;color:var(--text);font-weight:500}
+.bar{margin-bottom:12px}.bt{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.track{height:10px;background:var(--bg);border-radius:999px;overflow:hidden}.track div{height:100%;background:var(--brand);border-radius:999px}
+#gBox{height:540px;background:#fbfcfe;border:1px solid var(--line);border-radius:12px}
+.gw{position:relative}#gEmpty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:20px;pointer-events:none}
+.gt{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.gt label{flex-direction:row;align-items:center;margin:0;color:var(--text)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:12.5px}.legend span{display:flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:50%}
+.muted{color:var(--muted);font-size:13px}
+dialog{border:0;border-radius:16px;padding:0;width:min(720px,94vw);max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(8,12,18,.55)}
+.mh{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 22px 8px;gap:12px}.mh h3{margin:0;font-size:20px}
+.mb{padding:0 22px 22px;overflow-y:auto;max-height:calc(90vh - 80px)}
+.visit{border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}.visit h4{margin:0 0 8px}
+.kv{color:var(--muted);font-size:13.5px;margin:4px 0}.kv b{color:var(--text)}
+.bill{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;font-weight:600}
+#toast{position:fixed;right:22px;bottom:22px;padding:11px 16px;border-radius:10px;background:var(--brand);color:#fff;font-weight:600;display:none;max-width:360px;z-index:99}
+#toast.bad{background:var(--danger)}
+#banner{display:none;background:var(--dsoft);color:var(--danger);border:1px solid var(--danger);border-radius:12px;padding:12px 16px;margin-bottom:16px}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:20px}
+
+/* MEDIGRAPH AUTHENTICATION SCREEN */
+.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px 18px;background:radial-gradient(circle at 10% 10%,#d8f4ef 0,transparent 35%),radial-gradient(circle at 90% 90%,#dceefa 0,transparent 35%),#f4f7fa}
+.auth-wrapper{width:100%;max-width:440px}
+.auth-brand{text-align:center;margin-bottom:25px}
+.auth-logo{width:54px;height:54px;display:grid;place-items:center;margin:0 auto 12px;border-radius:16px;background:#0e9486;color:white;font-size:30px;font-weight:700}
+.auth-brand h1{margin:0;color:#0b6f65;font-size:29px}
+.auth-brand p{color:#64748b;margin:5px 0}
+.auth-card{background:white;padding:30px;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 15px 45px rgba(16,24,40,.09)}
+.auth-card h2{margin:0 0 5px;font-size:23px}
+.auth-subtitle{color:#64748b;margin:0 0 24px;font-size:14px}
+.auth-card label{display:flex;flex-direction:column;gap:7px;margin-bottom:15px;color:#334155;font-size:13px;font-weight:600}
+.auth-card input,.auth-card select{width:100%;padding:12px;border:1px solid #dbe3eb;border-radius:9px;font:inherit}
+.auth-card input:focus,.auth-card select:focus{outline:2px solid #0e9486;border-color:transparent}
+.auth-submit{width:100%;margin-top:8px;padding:12px;border:0;border-radius:9px;background:#0e9486;color:white;font-size:15px;font-weight:700;cursor:pointer}
+.auth-submit:hover{background:#0b6f65}
+.auth-switch{text-align:center;margin-top:20px;color:#64748b;font-size:13px}
+.auth-switch button{border:0;background:none;color:#0b8176;font-weight:700;cursor:pointer}
+.auth-error{display:none;padding:10px;margin-bottom:14px;border-radius:8px;background:#fde8e8;color:#b42318;font-size:13px}
+.auth-admin{text-align:center;margin-top:20px}
+.auth-admin button{background:transparent;border:1px solid #dbe3eb;border-radius:9px;padding:10px 18px;color:#334155;cursor:pointer;font-weight:600}
+.auth-admin button:hover{background:#f4f7fa}
+.auth-hidden{display:none!important}
+
+/* PATIENT PORTAL (full website layout) */
+.pp{min-height:100vh;background:var(--bg)}
+.pp-top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}
+.pp-bar{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;padding:10px 20px}
+.pp-user{display:flex;align-items:center;gap:14px;font-weight:600}
+.pp-main{max-width:1200px;margin:auto;padding:22px 20px 40px}
+.pp-grid{display:grid;grid-template-columns:330px 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.pp-grid{grid-template-columns:1fr}}
+.pp-avatar{width:76px;height:76px;border-radius:50%;background:var(--soft);color:var(--brand2);display:grid;place-items:center;font-size:30px;font-weight:700;margin:0 auto 10px}
+.pp-name{text-align:center;font-size:19px;font-weight:700}
+.pp-id{text-align:center;color:var(--muted);font-size:13px;margin-bottom:14px}
+.pp-row{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.pp-row span{color:var(--muted)}
+.pp-foot{text-align:center;color:var(--muted);font-size:13px;padding:20px}
+.pp .visit h4{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.pp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:var(--shadow)}
+.pp-tab{flex:1;min-width:120px;border:0;background:none;padding:10px 14px;border-radius:10px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}
+.pp-tab:hover{background:var(--bg);color:var(--text)}
+.pp-tab.on{background:var(--brand);color:#fff}
+.pp-panel{display:none}.pp-panel.on{display:block;animation:f .2s}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:6px}
+.doc-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--bg);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.pp-avatar.sm{width:54px;height:54px;font-size:22px;margin:0 0 4px}
+.med-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.med-card{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--bg);display:flex;flex-direction:column;gap:4px}
+.med-card.on{border-color:var(--brand);background:var(--soft)}
+.med-p{font-size:18px;font-weight:700;color:var(--brand2);margin:4px 0}
+.pp-grid.shop{grid-template-columns:1fr 340px}
+@media(max-width:900px){.pp-grid.shop{grid-template-columns:1fr}}
+.cart-line{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.cart-total{display:flex;justify-content:space-between;font-weight:700;font-size:16px;padding:10px 0}
+.pp-panel label.lt{flex-direction:row;align-items:center;gap:10px;color:var(--text);font-weight:500;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px}
+.pp-panel label.lt b{margin-left:auto;color:var(--brand2)}
+.pp-panel select{width:100%}
+</style>
+</head>
+<body>
+
+<!-- MEDIGRAPH AUTHENTICATION -->
+<div id="authScreen" class="auth-screen">
+<div class="auth-wrapper">
+<div class="auth-brand">
+<div class="auth-logo">+</div>
+<h1>MediGraph</h1>
+<p>Your healthcare, connected.</p>
+</div>
+<div class="auth-card">
+
+<!-- LOGIN FORM -->
+<div id="loginForm">
+<h2>Welcome back</h2>
+<p class="auth-subtitle">Sign in to access your patient portal.</p>
+<div id="loginError" class="auth-error"></div>
+<form onsubmit="patientLogin(event)">
+<label>Email address
+<input type="email" id="loginEmail" placeholder="you@example.com" required>
+</label>
+<label>Password
+<input type="password" id="loginPassword" placeholder="Enter your password" required>
+</label>
+<button class="auth-submit" type="submit">Sign in</button>
+</form>
+<div class="auth-switch">
+Don't have an account?
+<button onclick="showRegister()">Create account</button>
+</div>
+</div>
+
+<!-- REGISTRATION FORM -->
+<div id="registerForm" class="auth-hidden">
+<h2>Create your account</h2>
+<p class="auth-subtitle">Join MediGraph and manage your healthcare.</p>
+<div id="registerError" class="auth-error"></div>
+<form onsubmit="patientRegister(event)">
+<label>Full name
+<input type="text" id="regName" placeholder="Your full name" required>
+</label>
+<label>Email address
+<input type="email" id="regEmail" placeholder="you@example.com" required>
+</label>
+<label>Password<input type="password" id="regPassword" placeholder="Minimum 8 characters" minlength="8" required>
+</label>
+<label>Gender
+<select id="regGender" required>
+<option value="">Select gender</option>
+<option value="Male">Male</option>
+<option value="Female">Female</option>
+<option value="Other">Other</option>
+</select>
+</label>
+<label>Date of birth
+<input type="date" id="regDob" required>
+</label>
+<button class="auth-submit" type="submit">Create account</button>
+</form>
+<div class="auth-switch">
+Already have an account?
+<button onclick="showLogin()">Sign in</button>
+</div>
+</div>
+</div>
+<div class="auth-admin">
+<button onclick="enterAdmin()">Continue as administrator</button>
+</div>
+</div>
+</div>
+
+<!-- PATIENT PORTAL -->
+<div id="patientPortal" class="pp auth-hidden">
+  <div class="pp-top">
+    <div class="pp-bar">
+      <div class="logo"><i>+</i>MediGraph</div>
+      <div class="pp-user">
+        <span id="ppName"></span>
+        <button class="btn ghost sm" onclick="patientLogout()">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pp-main">
+    <div class="hero">
+      <h1 id="patientWelcome">Welcome!</h1>
+      <p>Your appointments, diagnoses, prescriptions and bills, all in one place.</p>
+    </div>
+    <div class="pp-tabs">
+      <button class="pp-tab on" data-t="overview" onclick="ppTab('overview')">Overview</button>
+      <button class="pp-tab" data-t="book" onclick="ppTab('book')">Book appointment</button>
+      <button class="pp-tab" data-t="shop" onclick="ppTab('shop')">Buy medicine</button>
+      <button class="pp-tab" data-t="lab" onclick="ppTab('lab')">Lab tests</button>
+    </div>
+
+    <div id="pp-overview" class="pp-panel on"><div id="patientDashboard"><p class="muted">Loading your healthcare records...</p></div></div>
+    <div id="pp-book" class="pp-panel"></div>
+    <div id="pp-shop" class="pp-panel"></div>
+    <div id="pp-lab" class="pp-panel"></div>
+  </div>
+
+  <div class="pp-foot">MediGraph Hospital · Your healthcare, connected.</div>
+</div>
+
+<!-- ADMIN -->
+<header class="auth-hidden"><div class="nav">
+  <div class="logo" onclick="go('home')"><i>+</i>MediGraph</div>
+  <nav>
+    <button data-p="home" class="on">Home</button>
+    <button data-p="doctors">Doctors</button>
+    <button data-p="patients">Patients</button>
+    <button data-p="appointments">Appointments</button>
+    <button data-p="pharmacy">Pharmacy</button>
+    <button data-p="billing">Billing</button>
+    <button data-p="graph">Graph Explorer</button>
+    <button data-p="analytics">Analytics</button>
+  </nav>
+  <span class="pill" id="status"><i></i><span>Connecting...</span></span>
+</div></header>
+
+<main class="auth-hidden">
+<div id="banner"></div>
+
+<!-- HOME -->
+<section id="home" class="page on">
+  <div class="hero">
+    <h1>Smart care, connected.</h1>
+    <p>Manage doctors, patients, appointments, medicines and billing in one place. Every record is a node in a Neo4j graph, so you can also see how it all connects.</p>
+    <button class="btn" onclick="go('appointments')">Book an appointment</button>
+    <button class="btn ghost" onclick="go('graph')">Explore the graph</button>
+  </div>
+  <div class="stats" id="homeStats"></div>
+  <div class="grid2">
+    <div class="card"><h3>Departments</h3><div class="deps" id="homeDeps"></div></div>
+    <div class="card"><h3>Recent appointments</h3><div id="homeAppts"></div></div>
+  </div>
+  <div class="card"><h3>Database</h3><span class="muted" id="gstat"></span></div>
+</section>
+
+<!-- DOCTORS -->
+<section id="doctors" class="page">
+  <div class="head"><div><h2>Doctors and Departments</h2><p>Add doctors and place them in departments</p></div>
+    <div><button class="btn ghost" onclick="addDept()">+ Add department</button> <button class="btn" onclick="addDoctor()">+ Add doctor</button></div></div>
+  <div class="card"><h3>Departments</h3><div id="depList"></div></div>
+  <div class="card"><h3>All doctors</h3><div id="docTable"></div></div>
+</section>
+
+<!-- PATIENTS -->
+<section id="patients" class="page">
+  <div class="head"><div><h2>Patients</h2><p>Register patients, record diagnoses and open full records</p></div>
+    <div><button class="btn ghost" onclick="addDisease()">+ Add disease</button> <button class="btn" onclick="addPatient()">+ Add patient</button></div></div>
+  <div class="card">
+    <div class="row"><label>Search<input id="pSearch" placeholder="Type a name..." oninput="renderPatients()"></label>
+      <label style="max-width:180px">Gender<select id="pGender" onchange="renderPatients()"><option>All</option><option>Male</option><option>Female</option></select></label></div>
+    <div id="patTable"></div>
+  </div>
+</section>
+
+<!-- APPOINTMENTS -->
+<section id="appointments" class="page">
+  <div class="head"><div><h2>Appointments</h2><p>Book visits, add lab tests and write prescriptions</p></div>
+    <button class="btn" onclick="bookAppt()">+ Book appointment</button></div>
+  <div class="card"><div id="apTable"></div></div>
+</section>
+
+<!-- PHARMACY -->
+<section id="pharmacy" class="page">
+  <div class="head"><div><h2>Pharmacy</h2><p>Medicine stock list and prices</p></div>
+    <button class="btn" onclick="addMedicine()">+ Add medicine</button></div>
+  <div class="card"><div id="medTable"></div></div>
+</section>
+
+<!-- BILLING -->
+<section id="billing" class="page">
+  <div class="head"><div><h2>Billing</h2><p>Bills generated from prescriptions</p></div></div>
+  <div class="stats" id="billStats"></div>
+  <div class="card"><div id="billTable"></div></div>
+</section>
+
+<!-- GRAPH -->
+<section id="graph" class="page">
+  <div class="head"><div><h2>Graph Explorer</h2><p>See how the hospital data is connected in Neo4j</p></div></div>
+  <div class="grid-side">
+    <div class="card">
+      <label>View
+        <select id="gMode" onchange="gModeUI()">
+          <option value="whole">Whole hospital graph</option>
+          <option value="patient">A patient's journey</option>
+          <option value="doctor">A doctor's patients</option>
+          <option value="shared">Patients sharing a disease</option>
+          <option value="together">Medicines prescribed together</option>
+          <option value="path">Shortest path between patients</option>
+        </select></label>
+      <label id="wPat" style="display:none">Patient<select id="gPat"></select></label>
+      <label id="wPat2" style="display:none">To patient<select id="gPat2"></select></label>
+      <label id="wDoc" style="display:none">Doctor<select id="gDoc"></select></label>
+      <label id="wMed" style="display:none">Medicine<select id="gMed"></select></label>
+      <button class="btn" onclick="showGraph()">Show graph</button>
+      <div class="muted" id="gHint" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <div class="gt">
+        <input id="gSearch" type="search" placeholder="Find a node, press Enter" style="flex:1;min-width:140px">
+        <button class="btn ghost sm" onclick="net&&net.fit({animation:true})">Fit</button>
+        <label><input type="checkbox" id="gEdge" checked onchange="last&&drawGraph(last)"> Relationship names</label>
+      </div>
+      <div class="gw"><div id="gBox"></div><div id="gEmpty">Pick a view and press Show graph.</div></div>
+      <div class="muted" id="gCount" style="margin-top:8px"></div>
+      <div id="gProps" class="muted" style="margin-top:8px">Click a node to see its properties. Drag nodes, scroll to zoom.</div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYTICS -->
+<section id="analytics" class="page">
+  <div class="head"><div><h2>Analytics</h2><p>Graph queries that are awkward in SQL</p></div></div>
+  <div class="grid2">
+    <div class="card"><h3>Revenue per doctor</h3><div id="aRev"></div></div>
+    <div class="card"><h3>Patients sharing a disease</h3><div id="aShared"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Medicines prescribed together</h3>
+      <label>Medicine<select id="aMed" onchange="loadTogether().catch(fail)"></select></label><div id="aTog"></div></div>
+    <div class="card"><h3>Medicine prices <small id="aAvg"></small></h3><div id="aPrice"></div></div>
+  </div>
+  <div class="card"><h3>Patients per doctor</h3><div id="aLoad"></div></div>
+</section>
+</main>
+
+<footer class="auth-hidden">MediGraph Hospital · Neo4j + Flask + JavaScript</footer>
+
+<!-- generic form dialog -->
+<dialog id="formDlg">
+  <div class="mh"><h3 id="formTitle"></h3><button class="btn ghost sm" onclick="$('#formDlg').close()">Close</button></div>
+  <div class="mb"><div id="formBody"></div><button class="btn" id="formGo">Save</button></div>
+</dialog>
+
+<!-- patient profile dialog -->
+<dialog id="profile">
+  <div class="mh"><div id="profHead"></div><button class="btn ghost sm" onclick="$('#profile').close()">Close</button></div>
+  <div class="mb" id="profBody"></div>
+</dialog>
+<div id="toast"></div>
+<script>
+const API="http://127.0.0.1:5000/api";
+
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const money=n=>"\u20B9"+Number(n||0).toLocaleString("en-IN");
+
+const COLORS={Patient:"#f4a261",Doctor:"#2ec4b6",Department:"#8d99ae",Disease:"#5aa9f5",Appointment:"#ff7675",LabTest:"#c99a6b",Prescription:"#d4c600",Medicine:"#7fb77f",Bill:"#00a3a3"};
+
+let patientToken = localStorage.getItem("medigraph_token");
+
+async function api(path, method="GET", body) {
+    const headers = { "Content-Type": "application/json" };
+
+    if (patientToken) {
+        headers["Authorization"] = "Bearer " + patientToken;
+    }
+
+    const res = await fetch(API + path, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+        throw new Error(data.error || res.statusText);
+    }
+
+    return data;
+}
+
+/* =====================================
+   PATIENT AUTHENTICATION
+===================================== */
+
+function showLogin() {
+    $("#loginForm").classList.remove("auth-hidden");
+    $("#registerForm").classList.add("auth-hidden");
+    $("#loginError").style.display = "none";
+    $("#registerError").style.display = "none";
+}
+
+function showRegister() {
+    $("#registerForm").classList.remove("auth-hidden");
+    $("#loginForm").classList.add("auth-hidden");
+    $("#loginError").style.display = "none";
+    $("#registerError").style.display = "none";
+}
+
+function showAuthError(id, message) {
+    const el = $("#" + id);
+    el.textContent = message;
+    el.style.display = "block";
+}
+
+async function patientLogin(event) {
+    event.preventDefault();
+
+    const email = $("#loginEmail").value.trim();
+    const password = $("#loginPassword").value;
+
+    try {
+        const result = await api("/auth/login", "POST", { email, password });
+
+        patientToken = result.token;
+        localStorage.setItem("medigraph_token", patientToken);
+
+        $("#authScreen").classList.add("auth-hidden");
+        $("#patientPortal").classList.remove("auth-hidden");
+
+        await loadPatientDashboard();
+
+        toast("Welcome back, " + result.patient.name + "!");
+    } catch (e) {
+        showAuthError("loginError", e.message);
+    }
+}
+
+async function patientRegister(event) {
+    event.preventDefault();
+
+    const data = {
+        name: $("#regName").value.trim(),
+        email: $("#regEmail").value.trim(),
+        password: $("#regPassword").value,
+        gender: $("#regGender").value,
+        dob: $("#regDob").value
+    };
+
+    try {
+        const result = await api("/auth/register", "POST", data);
+
+        patientToken = result.token;
+        localStorage.setItem("medigraph_token", patientToken);
+
+        $("#authScreen").classList.add("auth-hidden");
+        $("#patientPortal").classList.remove("auth-hidden");
+
+        await loadPatientDashboard();
+
+        toast("Account created successfully!");
+    } catch (e) {
+        showAuthError("registerError", e.message);
+    }
+}
+
+function enterAdmin() {
+    $("#authScreen").classList.add("auth-hidden");
+    $("#patientPortal").classList.add("auth-hidden");
+
+    document.querySelector("header").classList.remove("auth-hidden");
+    document.querySelector("main").classList.remove("auth-hidden");
+    document.querySelector("footer").classList.remove("auth-hidden");
+
+    loadHome().catch(fail);
+}
+
+function patientLogout() {
+    patientToken = null;
+    ME = null; MY_VISITS = []; CART = [];
+    ppTab("overview");
+    localStorage.removeItem("medigraph_token");
+
+    $("#patientPortal").classList.add("auth-hidden");
+    $("#authScreen").classList.remove("auth-hidden");
+
+    $("#loginPassword").value = "";
+    showLogin();
+}
+
+async function loadPatientDashboard() {
+    const area = $("#patientDashboard");
+
+    try {
+        const session = await api("/auth/me");
+        const id = session.patient.id;
+
+        const data = await api("/patients/" + id + "/detail");
+
+        const p = data.patient;
+        const visits = data.visits || [];
+        const diseases = data.diseases || [];
+
+        $("#patientWelcome").textContent = "Welcome, " + p.name + "!";
+        $("#ppName").textContent = p.name;
+        ME = p;
+        MY_VISITS = visits;
+
+        const totalBills = visits.reduce((sum, v) => {
+            return sum + Number(v.consultation || 0) + Number(v.medicine_charge || 0);
+        }, 0);
+
+        area.innerHTML = `
+          <div class="stats">
+            <div class="card stat"><div class="num">${visits.length}</div><div class="lbl">Appointments</div></div>
+            <div class="card stat"><div class="num">${diseases.length}</div><div class="lbl">Diagnoses</div></div>
+            <div class="card stat"><div class="num">${money(totalBills)}</div><div class="lbl">Recorded bills</div></div>
+          </div>
+
+          <div class="pp-grid">
+            <div>
+              <div class="card">
+                <div class="pp-avatar">${esc((p.name || "?").charAt(0).toUpperCase())}</div>
+                <div class="pp-name">${esc(p.name)}</div>
+                <div class="pp-id">Patient ID ${esc(p.id)}</div>
+                <div class="pp-row"><span>Gender</span><b>${esc(p.gender)}</b></div>
+                <div class="pp-row"><span>Date of birth</span><b>${esc(p.dob)}</b></div>
+                <div class="pp-row"><span>Age</span><b>${age(p.dob)}</b></div>
+              </div>
+
+              <div class="card">
+                <h3>My diagnoses</h3>
+                ${diseases.length
+                  ? diseases.map(d => `
+                      <div class="visit">
+                        <b>${esc(d.name)}</b>
+                        <p class="muted">${esc(d.description || "No description available")}</p>
+                      </div>`).join("")
+                  : '<p class="muted">No diagnoses recorded.</p>'}
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>My appointments and prescriptions</h3>
+              ${visits.length
+                ? visits.map(v => {
+                    const medicines = (v.medicines || []).filter(m => m.name);
+                    const tests = (v.tests || []).filter(t => t.name);
+                    const bill = Number(v.consultation || 0) + Number(v.medicine_charge || 0);
+                    return `
+                      <div class="visit">
+                        <h4>Appointment #${esc(v.appointment)} <span class="tag">${esc(v.specialization)}</span></h4>
+                        <div class="kv">Doctor: <b>${esc(v.doctor)}</b> · Department: <b>${esc(v.department)}</b></div>
+                        <div class="kv">Lab tests:
+                          ${tests.length
+                            ? tests.map(t => `<span class="tag">${esc(t.name)} · ${money(t.cost)} · ${esc(t.result)}</span>`).join("")
+                            : "none"}
+                        </div>
+                        <div class="kv">Medicines:
+                          ${medicines.length
+                            ? medicines.map(m => `<span class="tag">${esc(m.name)} · ${money(m.price)}</span>`).join("")
+                            : "none"}
+                        </div>
+                        ${v.consultation != null
+                          ? `<div class="bill"><span>Total bill</span><span>${money(bill)}</span></div>`
+                          : '<div class="kv">No bill generated yet.</div>'}
+                      </div>`;
+                  }).join("")
+                : '<p class="muted">No appointments found yet.</p>'}
+            </div>
+          </div>
+        `;
+
+    } catch (error) {
+        area.innerHTML = `
+            <div class="auth-error" style="display:block">
+                Could not load your patient records: ${esc(error.message)}
+            </div>
+            <button class="btn" onclick="loadPatientDashboard()">Try again</button>
+        `;
+    }
+}
+
+/* =====================================
+   PATIENT PORTAL: tabs, booking, pharmacy, lab tests
+===================================== */
+
+let ME = null, MY_VISITS = [], MEDS = [], CART = [], DOCS = [];
+
+const LAB_TESTS = [
+    {n:"Complete Blood Count", c:300}, {n:"Blood Sugar", c:150},
+    {n:"Lipid Profile", c:600},       {n:"Thyroid Panel", c:450},
+    {n:"Urine Test", c:200},          {n:"ECG", c:400},
+    {n:"X-Ray", c:700},               {n:"Vitamin D", c:900}
+];
+
+const CONSULT_FEE = 500;
+
+function ppTab(t) {
+    $$(".pp-tab").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+    $$(".pp-panel").forEach(s => s.classList.toggle("on", s.id === "pp-" + t));
+    if (t === "book") loadBookTab().catch(fail);
+    if (t === "shop") loadShopTab().catch(fail);
+    if (t === "lab")  loadLabTab().catch(fail);
+}
+
+async function refreshMe() {
+    if (!ME) throw new Error("Please sign in again.");
+    const d = await api("/patients/" + ME.id + "/detail");
+    MY_VISITS = d.visits || [];
+}
+
+const noPrescription = v => v.consultation == null && !(v.medicines || []).some(m => m.name);
+
+/* ---------- BOOK APPOINTMENT ---------- */
+
+async function loadBookTab() {
+    await refreshMe();
+    DOCS = await api("/doctors/full");
+
+    const deps = [...new Set(DOCS.map(d => d.department).filter(Boolean))].sort();
+
+    $("#pp-book").innerHTML = `
+        <div class="card">
+            <h3>Book an appointment</h3>
+            <div class="row">
+                <label>Search doctor
+                    <input id="bkSearch" placeholder="Name or specialization" oninput="renderDocs()">
+                </label>
+                <label style="max-width:260px">Department
+                    <select id="bkDep" onchange="renderDocs()">
+                        <option value="">All departments</option>
+                        ${deps.map(d => `<option>${esc(d)}</option>`).join("")}
+                    </select>
+                </label>
+            </div>
+            <div id="bkList" class="doc-grid"></div>
+        </div>
+        <div class="card">
+            <h3>My appointments</h3>
+            <div id="bkMine"></div>
+        </div>`;
+
+    renderDocs();
+    renderMine();
+}
+
+function renderDocs() {
+    const s = ($("#bkSearch").value || "").trim().toLowerCase();
+    const dep = $("#bkDep").value;
+
+    const rows = DOCS.filter(d =>
+        (!dep || d.department === dep) &&
+        (d.name + " " + (d.specialization || "")).toLowerCase().includes(s)
+    );
+
+    $("#bkList").innerHTML = rows.length
+        ? rows.map(d => `
+            <div class="doc-card">
+                <div class="pp-avatar sm">${esc(String(d.name).replace(/^dr\.?\s*/i, "").charAt(0).toUpperCase())}</div>
+                <b>${esc(d.name)}</b>
+                <span class="muted">${esc(d.specialization || "")}</span>
+                <span class="tag">${esc(d.department)}</span>
+                <button class="btn sm" onclick="confirmBook(${d.id})">Book appointment</button>
+            </div>`).join("")
+        : '<div class="empty">No doctors found.</div>';
+}
+
+function renderMine() {
+    $("#bkMine").innerHTML = MY_VISITS.length
+        ? MY_VISITS.slice().reverse().map(v => `
+            <div class="visit">
+                <h4>Appointment #${esc(v.appointment)}
+                    <span>${Number(v.appointment) >= 5000
+                        ? `<button class="btn danger sm" onclick="cancelAppt(${v.appointment})">Cancel</button>` : ""}</span>
+                </h4>
+                <div class="kv">Doctor: <b>${esc(v.doctor)}</b> · Department: <b>${esc(v.department)}</b></div>
+                <div class="kv">Status: ${v.consultation != null ? "Completed and billed" : "Booked"}</div>
+            </div>`).join("")
+        : '<div class="empty">You have no appointments yet. Pick a doctor above to book one.</div>';
+}
+
+async function confirmBook(doctorId) {
+    const d = DOCS.find(x => x.id === doctorId);
+
+    if (!confirm("Book an appointment with " + d.name + " (" + d.department + ")?")) return;
+
+    try {
+        const r = await api("/appointments", "POST", { patient_id: ME.id, doctor_id: doctorId });
+        toast(r.message + " (ID " + r.appointment_id + ")");
+        await loadPatientDashboard();
+        await loadBookTab();
+    } catch (e) { fail(e); }
+}
+
+async function cancelAppt(id) {
+    if (!confirm("Cancel this appointment? Its tests, prescription and bill will also be removed.")) return;
+
+    try {
+        toast((await api("/appointments/" + id + "/remove", "DELETE")).message);
+        await loadPatientDashboard();
+        await loadBookTab();
+    } catch (e) { fail(e); }
+}
+
+/* ---------- BUY MEDICINE ---------- */
+
+async function loadShopTab() {
+    await refreshMe();
+    if (!MEDS.length) MEDS = await api("/medicines");
+    renderShop();
+}
+
+function toggleCart(i) {
+    const k = CART.indexOf(i);
+    if (k >= 0) CART.splice(k, 1); else CART.push(i);
+    renderShop();
+}
+
+function renderShop() {
+    const sub = CART.reduce((a, i) => a + Number(MEDS[i].price), 0);
+    const open = MY_VISITS.filter(noPrescription);
+
+    $("#pp-shop").innerHTML = `
+        <div class="pp-grid shop">
+            <div class="card">
+                <h3>Pharmacy <small>${MEDS.length} medicines</small></h3>
+                <div class="med-grid">
+                    ${MEDS.map((m, i) => {
+                        const on = CART.includes(i);
+                        return `
+                        <div class="med-card${on ? " on" : ""}">
+                            <b>${esc(m.name)}</b>
+                            <span class="muted">${esc(m.manufacturer || "")}</span>
+                            <div class="med-p">${money(m.price)}</div>
+                            <button class="btn ${on ? "danger" : ""} sm" onclick="toggleCart(${i})">${on ? "Remove" : "Add to cart"}</button>
+                        </div>`;
+                    }).join("")}
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Your cart</h3>
+                ${CART.length
+                    ? CART.map(i => `<div class="cart-line"><span>${esc(MEDS[i].name)}</span><b>${money(MEDS[i].price)}</b></div>`).join("") + `
+                      <div class="cart-line"><span>Medicines</span><b>${money(sub)}</b></div>
+                      <div class="cart-line"><span>Consultation fee</span><b>${money(CONSULT_FEE)}</b></div>
+                      <div class="cart-total"><span>Total</span><span>${money(sub + CONSULT_FEE)}</span></div>`
+                    : '<div class="empty">Your cart is empty. Add medicines from the list.</div>'}
+
+                ${CART.length ? (open.length ? `
+                    <label>Attach to appointment
+                        <select id="shopAppt">
+                            ${open.map(v => `<option value="${esc(v.appointment)}">#${esc(v.appointment)} · ${esc(v.doctor)}</option>`).join("")}
+                        </select>
+                    </label>
+                    <button class="btn" style="width:100%" onclick="placeOrder()">Place order</button>
+                    <p class="muted">Medicines are added to the prescription and bill of the chosen appointment.</p>`
+                : `<div class="auth-error" style="display:block">You need an appointment without a prescription to buy medicine.</div>
+                   <button class="btn" style="width:100%" onclick="ppTab('book')">Book an appointment</button>`) : ""}
+            </div>
+        </div>`;
+}
+
+async function placeOrder() {
+    const id = $("#shopAppt").value;
+
+    if (!confirm("Place this order for " + money(CART.reduce((a, i) => a + Number(MEDS[i].price), 0) + CONSULT_FEE) + "?")) return;
+
+    try {
+        const r = await api("/appointments/" + id + "/prescription", "POST", {
+            medicines: CART.map(i => MEDS[i].name),
+            consultation_charge: CONSULT_FEE
+        });
+        toast(r.message || "Order placed");
+        CART = [];
+        await loadPatientDashboard();
+        await loadShopTab();
+        ppTab("overview");
+    } catch (e) { fail(e); }
+}
+
+/* ---------- LAB TESTS ---------- */
+
+async function loadLabTab() {
+    await refreshMe();
+
+    if (!MY_VISITS.length) {
+        $("#pp-lab").innerHTML = `
+            <div class="card">
+                <h3>Book lab tests</h3>
+                <div class="empty">Lab tests are linked to an appointment. Book an appointment first.</div>
+                <button class="btn" onclick="ppTab('book')">Book an appointment</button>
+            </div>`;
+        return;
+    }
+
+    $("#pp-lab").innerHTML = `
+        <div class="card">
+            <h3>Book lab tests</h3>
+            <label>Appointment
+                <select id="labAppt">
+                    ${MY_VISITS.slice().reverse().map(v => `<option value="${esc(v.appointment)}">#${esc(v.appointment)} · ${esc(v.doctor)}</option>`).join("")}
+                </select>
+            </label>
+            ${LAB_TESTS.map((t, i) => `
+                <label class="lt">
+                    <input type="checkbox" name="lt" value="${i}" onchange="labTotal()">
+                    ${esc(t.n)} <b>${money(t.c)}</b>
+                </label>`).join("")}
+            <div class="cart-total"><span>Total</span><span id="labSum">${money(0)}</span></div>
+            <button class="btn" onclick="bookLabs()">Book selected tests</button>
+        </div>`;
+}
+
+function labTotal() {
+    const sum = $$("#pp-lab input[name=lt]:checked").reduce((a, x) => a + LAB_TESTS[x.value].c, 0);
+    $("#labSum").textContent = money(sum);
+}
+
+async function bookLabs() {
+    const id = $("#labAppt").value;
+    const picks = $$("#pp-lab input[name=lt]:checked").map(x => LAB_TESTS[x.value]);
+
+    if (!picks.length) return toast("Select at least one test", true);
+
+    try {
+        for (const t of picks) {
+            await api("/appointments/" + id + "/tests", "POST", { test_name: t.n, cost: t.c, result: "Pending" });
+        }
+        toast(picks.length + " lab test(s) booked");
+        await loadPatientDashboard();
+        await loadLabTab();
+    } catch (e) { fail(e); }
+}
+
+let tt;
+
+function toast(m,bad=false) {
+    const t=$("#toast");
+    t.textContent=m;
+    t.className=bad?"bad":"";
+    t.style.display="block";
+    clearTimeout(tt);
+    tt=setTimeout(()=>t.style.display="none",3800);
+}
+
+function fail(e) {
+    toast(e.message||String(e),true);
+}
+
+function table(rows,cols,o={}) {
+    if(!rows||!rows.length)
+        return '<div class="empty">No records yet.</div>';
+
+    const f=o.fmt||{};
+
+    let h="<div class='tw'><table><tr>"+
+        cols.map(c=>`<th>${esc(c[1])}</th>`).join("")+
+        (o.actions?"<th></th>":"")+"</tr>";
+
+    rows.forEach(r=>{
+        h+="<tr>"+
+        cols.map(c=>`<td>${f[c[0]]?f[c[0]](r[c[0]],r):esc(r[c[0]])}</td>`).join("")+
+        (o.actions?`<td class="act">${o.actions(r)}</td>`:"")+
+        "</tr>";
+    });
+
+    return h+"</table></div>";
+}
+
+function fill(sel,items,key,textFn) {
+    $(sel).innerHTML=items.map(i=>
+        `<option value="${esc(i[key])}">${esc(textFn(i))}</option>`
+    ).join("");
+}
+
+function age(dob) {
+    const d=new Date(dob);
+    if(isNaN(d))return"";
+
+    const n=new Date();
+    let a=n.getFullYear()-d.getFullYear();
+
+    if(n<new Date(n.getFullYear(),d.getMonth(),d.getDate()))a--;
+
+    return a;
+}
+
+const gtag=g=>`<span class="tag ${g==="Female"?"f":"m"}">${esc(g)}</span>`;
+
+/* ---------- generic form dialog ---------- */
+
+let formSubmit=null;
+
+function openForm(title,fields,submit) {
+    $("#formTitle").textContent=title;
+
+    $("#formBody").innerHTML=fields.map(f=>{
+        if(f.type==="select")
+            return `<label>${esc(f.label)}
+            <select name="${f.name}">
+            ${f.options.map(o=>`<option value="${esc(o.v)}"${String(o.v)===String(f.value)?" selected":""}>${esc(o.t)}</option>`).join("")}
+            </select></label>`;
+
+        if(f.type==="checks")
+            return `<div class="lbl2">${esc(f.label)}</div>
+            <div class="checks">
+            ${f.options.map(o=>`<label><input type="checkbox" name="${f.name}" value="${esc(o.v)}">${esc(o.t)}</label>`).join("")}
+            </div>`;
+
+        return `<label>${esc(f.label)}
+        <input name="${f.name}" type="${f.type||"text"}" value="${esc(f.value??"")}" ${f.attrs||""}>
+        </label>`;
+    }).join("");
+
+    formSubmit=submit;
+    $("#formDlg").showModal();
+}
+
+$("#formGo").onclick=async()=>{
+    const d={};
+
+    $$("#formBody [name]").forEach(el=>{
+        if(el.type==="checkbox"){
+            d[el.name]=d[el.name]||[];
+            if(el.checked)d[el.name].push(el.value);
+        } else {
+            d[el.name]=el.value;
+        }
+    });
+
+    try {
+        await formSubmit(d);
+        $("#formDlg").close();
+    } catch(e) {
+        fail(e);
+    }
+};
+
+/* ---------- navigation ---------- */
+
+const PAGES={
+    home:loadHome,
+    doctors:loadDoctors,
+    patients:loadPatients,
+    appointments:loadAppointments,
+    pharmacy:loadPharmacy,
+    billing:loadBilling,
+    graph:initGraph,
+    analytics:loadAnalytics
+};
+
+function go(p) {
+    $$("nav button").forEach(b=>
+        b.classList.toggle("on",b.dataset.p===p)
+    );
+
+    $$(".page").forEach(s=>
+        s.classList.toggle("on",s.id===p)
+    );
+
+    if(PAGES[p])PAGES[p]().catch(fail);
+}
+
+$$("nav button").forEach(b=>{
+    b.onclick=()=>go(b.dataset.p);
+});
+
+/* ---------- HOME ---------- */
+
+async function loadHome(){
+
+  const [s,ap,deps]=await Promise.all([
+    api("/stats"),
+    api("/appointments/full"),
+    api("/departments")
+  ]);
+
+  const n=l=>(s.nodes.find(x=>x.label===l)||{total:0}).total;
+
+  $("#homeStats").innerHTML=[
+    ["Patients","Patient"],
+    ["Doctors","Doctor"],
+    ["Departments","Department"],
+    ["Medicines","Medicine"],
+    ["Appointments","Appointment"],
+    ["Bills","Bill"]
+  ].map(([l,k])=>
+    `<div class="card stat"><div class="num">${n(k)}</div><div class="lbl">${l}</div></div>`
+  ).join("");
+
+  $("#homeDeps").innerHTML=deps.map(d=>
+    `<div class="dep"><b>${esc(d.name)}</b><span>${d.doctors} doctor${d.doctors===1?"":"s"}</span></div>`
+  ).join("");
+
+  $("#homeAppts").innerHTML=table(
+    ap.slice(-6).reverse(),
+    [["id","Appt"],["patient","Patient"],["doctor","Doctor"],["bill","Bill"]],
+    {fmt:{bill:v=>v==null?"-":money(v)}}
+  );
+
+  $("#gstat").textContent=
+    `${s.total_nodes} nodes and ${s.total_relationships} relationships stored in Neo4j.`;
+}
+
+
+/* ---------- DOCTORS ---------- */
+
+let DEPS=[];
+
+async function loadDoctors(){
+
+  const [docs,deps]=await Promise.all([
+    api("/doctors/full"),
+    api("/departments")
+  ]);
+
+  DEPS=deps;
+
+  $("#depList").innerHTML=deps.map(d=>
+    `<span class="tag">${esc(d.name)} · ${d.doctors}
+    ${d.app_added&&!d.doctors?
+      `<a href="#" onclick="delDept('${encodeURIComponent(d.name)}');return false">x</a>`:""}
+    </span>`
+  ).join("")||'<div class="empty">No departments.</div>';
+
+  $("#docTable").innerHTML=table(
+    docs,
+    [
+      ["id","ID"],
+      ["name","Name"],
+      ["specialization","Specialization"],
+      ["department","Department"],
+      ["type","Type"],
+      ["patients","Patients"]
+    ],
+    {
+      fmt:{
+        type:v=>v?`<span class="tag">${esc(v)}</span>`:""
+      },
+      actions:r=>r.app_added?
+        `<button class="btn danger sm" onclick="delDoctor(${r.id})">Delete</button>`:""
+    }
+  );
+}
+
+function addDept(){
+
+  openForm(
+    "Add department",
+    [{name:"name",label:"Department name"}],
+    async d=>{
+      toast((await api("/departments","POST",d)).message);
+      loadDoctors();
+    }
+  );
+}
+
+async function addDoctor(){
+
+  if(!DEPS.length) DEPS=await api("/departments");
+
+  openForm(
+    "Add doctor",
+    [
+      {name:"name",label:"Doctor name"},
+      {name:"specialization",label:"Specialization"},
+      {
+        name:"department",
+        label:"Department",
+        type:"select",
+        options:DEPS.map(x=>({v:x.name,t:x.name}))
+      },
+      {
+        name:"type",
+        label:"Type",
+        type:"select",
+        options:["Full-time","Part-time","Visiting"].map(x=>({v:x,t:x}))
+      }
+    ],
+    async d=>{
+      toast((await api("/doctors","POST",d)).message);
+      loadDoctors();
+    }
+  );
+}
+
+async function delDoctor(id){
+
+  if(!confirm("Delete this doctor?"))return;
+
+  try{
+    toast((await api("/doctors/"+id,"DELETE")).message);
+    loadDoctors();
+  }catch(e){
+    fail(e);
+  }
+}
+
+async function delDept(n){
+
+  try{
+    toast((await api("/departments/"+n,"DELETE")).message);
+    loadDoctors();
+  }catch(e){
+    fail(e);
+  }
+}
+
+
+/* ---------- PATIENTS ---------- */
+
+let PAT=[];
+
+async function loadPatients(){
+
+  PAT=await api("/patients/full");
+  renderPatients();
+}
+
+function renderPatients(){
+
+  const s=$("#pSearch").value.trim().toLowerCase();
+  const g=$("#pGender").value;
+
+  const rows=PAT.filter(p=>
+    (g==="All"||p.gender===g)&&
+    p.name.toLowerCase().includes(s)
+  );
+
+  $("#patTable").innerHTML=table(
+    rows,
+    [
+      ["id","ID"],
+      ["name","Name"],
+      ["gender","Gender"],
+      ["dob","Date of birth"],
+      ["visits","Visits"],
+      ["diagnoses","Diagnosis"]
+    ],
+    {
+      fmt:{
+        gender:gtag,
+        diagnoses:v=>(v||[]).map(x=>
+          `<span class="tag">${esc(x)}</span>`
+        ).join("")||"-"
+      },
+      actions:r=>
+        `<button class="btn ghost sm" onclick="openPatient(${r.id})">View</button>
+         <button class="btn ghost sm" onclick="editPatient(${r.id})">Edit</button>
+         ${r.app_added?
+          `<button class="btn danger sm" onclick="delPatient(${r.id})">Delete</button>`:""}`
+    }
+  );
+}
+
+async function addPatient(){
+
+  const dis=await api("/diseases");
+
+  openForm(
+    "Add patient",
+    [
+      {
+        name:"patient_id",
+        label:"Patient ID",
+        type:"number",
+        value:Math.max(306,...PAT.map(p=>p.id))+1
+      },
+      {name:"name",label:"Full name"},
+      {
+        name:"gender",
+        label:"Gender",
+        type:"select",
+        options:[
+          {v:"Male",t:"Male"},
+          {v:"Female",t:"Female"}
+        ]
+      },
+      {name:"dob",label:"Date of birth",type:"date"},
+      {
+        name:"disease_id",
+        label:"Diagnosis",
+        type:"select",
+        options:[
+          {v:"none",t:"None"},
+          ...dis.map(x=>({v:x.id,t:x.name}))
+        ]
+      }
+    ],
+    async d=>{
+      toast((await api("/patients","POST",d)).message);
+      loadPatients();
+    }
+  );
+}
+
+function editPatient(id){
+
+  const p=PAT.find(x=>x.id===id);
+
+  openForm(
+    "Edit patient "+id,
+    [
+      {name:"name",label:"Full name",value:p.name},
+      {
+        name:"gender",
+        label:"Gender",
+        type:"select",
+        value:p.gender,
+        options:[
+          {v:"Male",t:"Male"},
+          {v:"Female",t:"Female"}
+        ]
+      },
+      {name:"dob",label:"Date of birth",type:"date",value:p.dob}
+    ],
+    async d=>{
+      toast((await api("/patients/"+id,"PUT",d)).message);
+      loadPatients();
+    }
+  );
+}
+
+async function delPatient(id){
+
+  if(!confirm("Delete this patient and their app-created appointments?"))return;
+
+  try{
+    toast((await api(`/patients/${id}/remove`,"DELETE")).message);
+    loadPatients();
+  }catch(e){
+    fail(e);
+  }
+}
+
+function addDisease(){
+
+  openForm(
+    "Add disease",
+    [
+      {name:"name",label:"Disease name"},
+      {name:"description",label:"Description"}
+    ],
+    async d=>{
+      toast((await api("/diseases","POST",d)).message);
+    }
+  );
+}
+
+async function openPatient(id){
+
+  try{
+
+    const d=await api(`/patients/${id}/detail`);
+    const p=d.patient;
+
+    $("#profHead").innerHTML=
+      `<h3>${esc(p.name)}</h3>
+       <div class="kv">ID <b>${p.id}</b> &middot;
+       ${gtag(p.gender)} &middot;
+       Born <b>${esc(p.dob)}</b> (age ${age(p.dob)})</div>`;
+
+    let h=
+      `<div class="kv">Diagnosis:
+      ${d.diseases.length?
+        d.diseases.map(x=>
+          `<span class="tag" title="${esc(x.description)}">${esc(x.name)}</span>`
+        ).join(""):"none recorded"}
+      </div>`;
+
+    h+=
+      `<div style="margin:10px 0">
+        <button class="btn sm" onclick="diagnose(${p.id})">+ Add diagnosis</button>
+        <button class="btn ghost sm" onclick="patientGraph(${p.id})">View as graph</button>
+      </div>`;
+
+    if(!d.visits.length)
+      h+='<div class="empty">No appointments yet.</div>';
+
+    d.visits.forEach(v=>{
+
+      const tests=(v.tests||[]).filter(t=>t.name);
+      const meds=(v.medicines||[]).filter(m=>m.name);
+
+      const total=v.consultation!=null?
+        Number(v.consultation)+Number(v.medicine_charge||0):null;
+
+      h+=
+        `<div class="visit">
+          <h4>Appointment ${v.appointment} &middot; ${esc(v.doctor)}
+          <span class="tag">${esc(v.specialization)}</span></h4>
+
+          <div class="kv">Department: <b>${esc(v.department)}</b></div>
+
+          <div class="kv">Lab tests:
+          ${tests.length?
+            tests.map(t=>
+              `<span class="tag">${esc(t.name)} &middot; ${money(t.cost)} &middot; ${esc(t.result)}</span>`
+            ).join(""):"none"}
+          </div>
+
+          <div class="kv">Prescription
+          ${v.prescription_date?" ("+esc(v.prescription_date)+")":""}:
+          ${meds.length?
+            meds.map(m=>
+              `<span class="tag">${esc(m.name)} &middot; ${money(m.price)}</span>`
+            ).join(""):"none"}
+          </div>
+
+          ${total!==null?
+            `<div class="bill">
+              <span>Consultation ${money(v.consultation)} + medicine ${money(v.medicine_charge)}</span>
+              <span>${money(total)}</span>
+            </div>`:""}
+        </div>`;
+    });
+
+    $("#profBody").innerHTML=h;
+    $("#profile").showModal();
+
+  }catch(e){
+    fail(e);
+  }
+}
+
+async function diagnose(id){
+
+  const dis=await api("/diseases");
+
+  openForm(
+    "Add diagnosis",
+    [{
+      name:"disease_id",
+      label:"Disease",
+      type:"select",
+      options:dis.map(x=>({v:x.id,t:x.name}))
+    }],
+    async d=>{
+      toast((await api(`/patients/${id}/diagnoses`,"POST",d)).message);
+      openPatient(id);
+      loadPatients();
+    }
+  );
+}
+
+function patientGraph(id){
+
+  $("#profile").close();
+  go("graph");
+
+  initGraph().then(()=>{
+    $("#gMode").value="patient";
+    gModeUI();
+    $("#gPat").value=String(id);
+    showGraph();
+  });
+}
+
+
+/* ---------- APPOINTMENTS ---------- */
+
+async function loadAppointments(){
+
+  const ap=await api("/appointments/full");
+
+  $("#apTable").innerHTML=table(
+    ap.slice().reverse(),
+    [
+      ["id","Appt"],
+      ["patient","Patient"],
+      ["doctor","Doctor"],
+      ["department","Department"],
+      ["tests","Lab tests"],
+      ["bill","Bill"]
+    ],
+    {
+      fmt:{
+        bill:v=>v==null?
+          '<span class="muted">no bill</span>':money(v)
+      },
+      actions:r=>
+        `<button class="btn ghost sm" onclick="addTest(${r.id})">+ Lab test</button>
+        ${r.prescriptions?"":
+          `<button class="btn sm" onclick="prescribe(${r.id})">Prescribe</button>`}
+        ${r.id>=5000?
+          `<button class="btn danger sm" onclick="delAppt(${r.id})">Delete</button>`:""}`
+    }
+  );
+}
+
+async function bookAppt(){
+
+  const [pts,docs]=await Promise.all([
+    api("/patients"),
+    api("/doctors")
+  ]);
+
+  openForm(
+    "Book appointment",
+    [
+      {
+        name:"patient_id",
+        label:"Patient",
+        type:"select",
+        options:pts.map(p=>({v:p.id,t:p.name}))
+      },
+      {
+        name:"doctor_id",
+        label:"Doctor",
+        type:"select",
+        options:docs.map(x=>({
+          v:x.id,
+          t:`${x.name} (${x.department})`
+        }))
+      }
+    ],
+    async d=>{
+      const r=await api("/appointments","POST",d);
+      toast(r.message+" (ID "+r.appointment_id+")");
+      loadAppointments();
+    }
+  );
+}
+
+function addTest(id){
+
+  openForm(
+    "Add lab test to appointment "+id,
+    [
+      {name:"test_name",label:"Test name"},
+      {name:"cost",label:"Cost",type:"number",value:300},
+      {name:"result",label:"Result",value:"Normal"}
+    ],
+    async d=>{
+      toast((await api(`/appointments/${id}/tests`,"POST",d)).message);
+      loadAppointments();
+    }
+  );
+}
+
+async function prescribe(id){
+
+  const meds=await api("/medicines");
+
+  openForm(
+    "Prescription for appointment "+id,
+    [
+      {
+        name:"medicines",
+        label:"Medicines",
+        type:"checks",
+        options:meds.map(m=>({
+          v:m.name,
+          t:`${m.name} (${money(m.price)})`
+        }))
+      },
+      {
+        name:"consultation_charge",
+        label:"Consultation charge",
+        type:"number",
+        value:500
+      }
+    ],
+    async d=>{
+      toast((await api(`/appointments/${id}/prescription`,"POST",d)).message);
+      loadAppointments();
+    }
+  );
+}
+
+async function delAppt(id){
+
+  if(!confirm("Delete this appointment with its tests, prescription and bill?"))return;
+
+  try{
+    toast((await api(`/appointments/${id}/remove`,"DELETE")).message);
+    loadAppointments();
+  }catch(e){
+    fail(e);
+  }
+}
+
+
+/* ---------- PHARMACY ---------- */
+
+async function loadPharmacy(){
+
+  const m=await api("/medicines/full");
+
+  $("#medTable").innerHTML=table(
+    m,
+    [
+      ["name","Medicine"],
+      ["manufacturer","Manufacturer"],
+      ["price","Price"],
+      ["times","Prescribed"]
+    ],
+    {
+      fmt:{price:v=>money(v)},
+      actions:r=>r.app_added&&!r.times?
+        `<button class="btn danger sm" onclick="delMed('${encodeURIComponent(r.name)}')">Delete</button>`:""
+    }
+  );
+}
+
+function addMedicine(){
+
+  openForm(
+    "Add medicine",
+    [
+      {name:"name",label:"Medicine name"},
+      {name:"manufacturer",label:"Manufacturer"},
+      {name:"price",label:"Price",type:"number"}
+    ],
+    async d=>{
+      toast((await api("/medicines","POST",d)).message);
+      loadPharmacy();
+    }
+  );
+}
+
+async function delMed(n){
+
+  if(!confirm("Delete this medicine?"))return;
+
+  try{
+    toast((await api("/medicines/"+n,"DELETE")).message);
+    loadPharmacy();
+  }catch(e){
+    fail(e);
+  }
+}
+
+
+/* ---------- BILLING ---------- */
+
+async function loadBilling(){
+
+  const b=await api("/bills");
+
+  const sum=b.reduce((a,x)=>a+Number(x.total||0),0);
+
+  $("#billStats").innerHTML=[
+    ["Bills",b.length],
+    ["Total revenue",money(sum)],
+    ["Average bill",money(b.length?(sum/b.length).toFixed(0):0)]
+  ].map(([l,v])=>
+    `<div class="card stat"><div class="num">${v}</div><div class="lbl">${l}</div></div>`
+  ).join("");
+
+  $("#billTable").innerHTML=table(
+    b,
+    [
+      ["id","Bill"],
+      ["patient","Patient"],
+      ["doctor","Doctor"],
+      ["consultation","Consultation"],
+      ["medicine","Medicine"],
+      ["total","Total"]
+    ],
+    {
+      fmt:{
+        consultation:money,
+        medicine:money,
+        total:v=>`<b>${money(v)}</b>`
+      }
+    }
+  );
+}
+
+
+/* ---------- GRAPH EXPLORER ---------- */
+
+let net=null,last=null;
+
+const HINTS={
+  whole:"Every node and relationship in the database.",
+  patient:"Follows the patient to appointments, doctors, diseases, tests, prescriptions, medicines and bills.",
+  doctor:"The doctor's department and every patient who booked with them.",
+  shared:"Two patients pointing to the same Disease node.",
+  together:"Prescriptions containing the chosen medicine, and the other medicines inside them.",
+  path:"Neo4j's shortestPath finds how two patients are connected."
+};
+
+$("#legend").innerHTML=Object.keys(COLORS).map(k=>
+  `<span><i style="background:${COLORS[k]}"></i>${k}</span>`
+).join("");
+
+async function initGraph(){
+
+  const [pts,docs,meds]=await Promise.all([
+    api("/patients"),
+    api("/doctors"),
+    api("/medicines")
+  ]);
+
+  fill("#gPat",pts,"id",p=>p.name);
+  fill("#gPat2",pts,"id",p=>p.name);
+
+  if(pts.length>5)$("#gPat2").selectedIndex=5;
+
+  fill("#gDoc",docs,"id",d=>d.name);
+  fill("#gMed",meds,"name",m=>m.name);
+
+  gModeUI();
+}
+
+function gModeUI(){
+
+  const m=$("#gMode").value;
+
+  $("#wPat").style.display=
+    (m==="patient"||m==="path")?"":"none";
+
+  $("#wPat2").style.display=
+    m==="path"?"":"none";
+
+  $("#wDoc").style.display=
+    m==="doctor"?"":"none";
+
+  $("#wMed").style.display=
+    m==="together"?"":"none";
+
+  $("#gHint").textContent=HINTS[m];
+}
+
+function gUrl(){
+
+  const m=$("#gMode").value;
+
+  if(m==="whole")return"/graph";
+
+  if(m==="patient")
+    return"/graph/patient/"+$("#gPat").value;
+
+  if(m==="doctor")
+    return"/graph/doctor/"+$("#gDoc").value;
+
+  if(m==="shared")
+    return"/graph/shared-disease";
+
+  if(m==="together")
+    return"/graph/medicine-together?name="+encodeURIComponent($("#gMed").value);
+
+  return `/graph/shortest-path?from=${$("#gPat").value}&to=${$("#gPat2").value}`;
+}
+
+async function showGraph(){
+
+  try{
+    drawGraph(await api(gUrl()));
+  }catch(e){
+    fail(e);
+  }
+}
+
+function drawGraph(g){
+
+  last=g;
+
+  if(net){
+    net.destroy();
+    net=null;
+  }
+
+  const empty=$("#gEmpty");
+
+  if(typeof vis==="undefined"){
+    empty.style.display="flex";
+    empty.textContent="Graph library not loaded. Check your internet connection.";
+    return;
+  }
+
+  if(!g.nodes.length){
+    empty.style.display="flex";
+    empty.textContent="No graph data for this selection.";
+    $("#gCount").textContent="";
+    return;
+  }
+
+  empty.style.display="none";
+
+  const nodes=new vis.DataSet(
+    g.nodes.map(n=>({
+      id:n.id,
+      label:n.label,
+      group:n.group,
+      props:n.props,
+      shape:"dot",
+      size:17,
+      color:{
+        background:COLORS[n.group]||"#999",
+        border:"#ffffff"
+      },
+      font:{
+        size:12,
+        color:"#14202e"
+      }
+    }))
+  );
+
+  const showE=$("#gEdge").checked;
+
+  const edges=new vis.DataSet(
+    g.edges.map(e=>({
+      id:e.id,
+      from:e.from,
+      to:e.to,
+      label:showE?e.label:"",
+      arrows:"to",
+      font:{
+        size:10,
+        color:"#64748b",
+        strokeWidth:0,
+        align:"middle"
+      },
+      color:{color:"#94a3b8"},
+      width:1.4
+    }))
+  );
+
+  net=new vis.Network(
+    $("#gBox"),
+    {nodes,edges},
+    {
+      physics:{
+        stabilization:{iterations:200},
+        barnesHut:{
+          springLength:120,
+          avoidOverlap:0.2
+        }
+      },
+      interaction:{hover:true}
+    }
+  );
+
+  net.on("click",p=>{
+    if(p.nodes.length)
+      showProps(nodes.get(p.nodes[0]));
+  });
+
+  $("#gCount").textContent=
+    `${g.nodes.length} nodes · ${g.edges.length} relationships`;
+
+  window._gn=nodes;
+}
+
+function showProps(n){
+
+  $("#gProps").innerHTML=
+    `<b style="color:${COLORS[n.group]||"inherit"}">${esc(n.group)}</b>
+    · ${esc(n.label)}
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin-top:6px">`+
+    Object.entries(n.props).map(([k,v])=>
+      `<span>${esc(k)}</span><div style="color:#14202e">${esc(v)}</div>`
+    ).join("")+
+    "</div>";
+}
+
+$("#gSearch").onkeydown=e=>{
+
+  if(e.key!=="Enter"||!window._gn)return;
+
+  const t=e.target.value.trim().toLowerCase();
+
+  if(!t)return;
+
+  const hit=window._gn.get({
+    filter:n=>String(n.label).toLowerCase().includes(t)
+  })[0];
+
+  if(!hit)
+    return toast("No node matches that name",true);
+
+  net.selectNodes([hit.id]);
+  net.focus(hit.id,{scale:1.3,animation:true});
+  showProps(hit);
+};
+
+
+/* ---------- ANALYTICS ---------- */
+
+async function loadAnalytics(){
+
+  const [rev,shared,meds,docs]=await Promise.all([
+    api("/revenue"),
+    api("/shared-disease"),
+    api("/medicines"),
+    api("/doctors/full")
+  ]);
+
+  const max=Math.max(...rev.map(r=>r.revenue),1);
+
+  $("#aRev").innerHTML=rev.length?
+    rev.map(r=>
+      `<div class="bar">
+        <div class="bt"><span>${esc(r.doctor)}</span><b>${money(r.revenue)}</b></div>
+        <div class="track"><div style="width:${r.revenue/max*100}%"></div></div>
+      </div>`
+    ).join(""):'<div class="empty">No billing yet.</div>';
+
+  $("#aShared").innerHTML=table(
+    shared,
+    [
+      ["patient1","Patient 1"],
+      ["patient2","Patient 2"],
+      ["disease","Disease"]
+    ]
+  );
+
+  fill("#aMed",meds,"name",m=>m.name);
+
+  if(meds.some(m=>m.name==="Paracetamol"))
+    $("#aMed").value="Paracetamol";
+
+  const avg=meds.reduce((a,m)=>a+Number(m.price),0)/(meds.length||1);
+
+  $("#aAvg").textContent="average "+money(avg.toFixed(2));
+
+  $("#aPrice").innerHTML=table(
+    meds.slice().sort((a,b)=>b.price-a.price),
+    [
+      ["name","Medicine"],
+      ["price","Price"],
+      ["manufacturer","Manufacturer"]
+    ],
+    {
+      fmt:{
+        price:v=>money(v)+(v>avg?' <span class="tag">above avg</span>':"")
+      }
+    }
+  );
+
+  $("#aLoad").innerHTML=table(
+    docs.slice().sort((a,b)=>b.patients-a.patients),
+    [
+      ["name","Doctor"],
+      ["department","Department"],
+      ["patients","Patients"]
+    ]
+  );
+
+  await loadTogether();
+}
+
+async function loadTogether(){
+
+  $("#aTog").innerHTML=table(
+    await api("/medicines/together?name="+encodeURIComponent($("#aMed").value)),
+    [
+      ["also_prescribed","Also prescribed"],
+      ["times","Times"]
+    ]
+  );
+}
+
+
+/* ---------- START APPLICATION ---------- */
+
+async function start() {
+
+    try {
+
+        await api("/health");
+
+        $("#status").className = "pill ok";
+        $("#status span").textContent = "Connected to Neo4j";
+
+        // Restore an existing patient session
+        if (patientToken) {
+
+            try {
+
+                await api("/auth/me");
+
+                $("#authScreen").classList.add("auth-hidden");
+                $("#patientPortal").classList.remove("auth-hidden");
+
+                await loadPatientDashboard();
+
+            } catch (e) {
+
+                patientToken = null;
+                localStorage.removeItem("medigraph_token");
+
+                $("#authScreen").classList.remove("auth-hidden");
+                $("#patientPortal").classList.add("auth-hidden");
+
+            }
+        }
+
+    } catch (e) {
+
+        $("#status span").textContent = "Backend offline";
+
+        const b = $("#banner");
+
+        b.style.display = "block";
+
+        b.innerHTML =
+            "<b>Cannot reach the backend.</b> " +
+            esc(e.message) +
+            "<br>Start it with <code>python app.py</code> in the backend folder, make sure Neo4j is RUNNING, then refresh.";
+
+    }
+
+}
+
+start();
+
+</script>
+
+</body>
+</html>

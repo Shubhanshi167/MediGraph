@@ -1,0 +1,4 @@
+flask
+flask-cors
+neo4j>=5
+python-dotenv
